@@ -1,21 +1,35 @@
-import requests
+from jira import JIRA
+
 import config
 
 
-def get_jql_filter(filter_id):
-    url = config.url + "/" + str(filter_id)
-    response = requests.get(url, headers=config.headers, auth=(config.username, config.password)).json()
-    print("Filter name: " + response['name'])
-    return response['searchUrl'] + "&maxResults=" + str(config.max_results)
+def connect_to_jira():
+    return JIRA(server=config.url, basic_auth=(config.username, config.password))
 
 
-def get_issues(jql_url):
-    return requests.get(jql_url, headers=config.headers, auth=(config.username, config.password)).json()
+def get_issues_by_filter(filter_name):
+    return jira.search_issues(filter_name)
 
 
-def filter_total(filter_response):
-    print("Filter total: " + str(filter_response['total']))
+def print_filter_info(filter_name, filter_issues):
+    print("Using filter: " + str(filter_name))
+    print("Total issues on filter: " + str(filter_issues.total))
 
 
-for filterId in config.filter_ids:
-    filter_total(get_issues(get_jql_filter(filterId)))
+def process(filter_name, filter_query):
+    issues = get_issues_by_filter(filter_query)
+    print_filter_info(filter_name, issues)
+
+
+jira = connect_to_jira()
+
+if len(config.filter_ids) != 0:
+    print("\nProcessing filters by ids, total: " + str(len(config.filter_ids)))
+    for filter_id in config.filter_ids:
+        jira_filter = jira.filter(filter_id)
+        process(jira_filter, jira_filter.jql)
+
+if len(config.filter_jql_queries) != 0:
+    print("\nProcessing custom filters by jql queries, total: " + str(len(config.filter_jql_queries)))
+    for jql_name, jql_query in config.filter_jql_queries.items():
+        process(jql_name, jql_query)

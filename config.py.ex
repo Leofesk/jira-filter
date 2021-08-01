@@ -1,14 +1,16 @@
 # Example config file
 
-url = "https://{SERVER_HOST}/rest/api/{API_VERSION}/filter"
-
-headers = {
-    "Accept": "application/json",
-    "Content-Type": "application/json"
-}
+url = "https://{SERVER_HOST}"
 
 username = 'username'
 password = 'password'
 
-filter_ids = [1, 2, 3, 4, 5]
-max_results = 999
+# Two options for searching issues by filter:
+
+# Search by filter ids
+filter_ids = [1, 2, 3]
+
+# Search by custom filter jql query
+filter_jql_queries = {
+    'custom jql query name': 'jql query'
+}
